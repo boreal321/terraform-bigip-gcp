@@ -69,3 +69,27 @@ resource "google_compute_instance" "mgmt_server" {
     scopes = ["userinfo-email", "compute-rw", "storage-rw"]
   }
 }
+
+resource "google_compute_instance" "mgmt_server_02" {
+  name         = "mgmt-server-02"
+  machine_type = var.external_machine_type
+  zone         = var.zone
+
+  tags = ["external", "http", "ssh"]
+
+  boot_disk {
+    initialize_params {
+      image = var.external_os_image
+      size  = var.external_boot_disk_size
+      type  = var.external_boot_disk_type
+    }
+  }
+
+  network_interface {
+    subnetwork = google_compute_subnetwork.mgmt_subnet.name
+  }
+
+  service_account {
+    scopes = ["userinfo-email", "compute-rw", "storage-rw"]
+  }
+}

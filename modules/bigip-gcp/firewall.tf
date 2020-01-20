@@ -16,7 +16,7 @@ resource "google_compute_firewall" "default_allow_internal_mgmt" {
   }
   priority = "65534"
 
-  source_ranges = ["${var.internal_cidr}"]
+  source_ranges = ["${var.mgmt_cidr}"]
 }
 resource "google_compute_firewall" "default_allow_internal_external" {
   name    = "default-allow-internal-external"
@@ -59,7 +59,7 @@ resource "google_compute_firewall" "default_allow_internal_internal" {
   source_ranges = [var.internal_cidr]
 }
 
-resource "google_compute_firewall" "internal_allow_ssh" {
+resource "google_compute_firewall" "internal_allowed" {
   name    = "internal-allow-ssh"
   network = google_compute_network.internal_vpc.name
 
@@ -69,10 +69,10 @@ resource "google_compute_firewall" "internal_allow_ssh" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["ssh"]
+  target_tags = ["ssh", "http"]
 }
 
-resource "google_compute_firewall" "external_allow_ssh" {
+resource "google_compute_firewall" "external_allowed" {
   name    = "external-allow-ssh"
   network = google_compute_network.external_vpc.name
 
@@ -82,18 +82,18 @@ resource "google_compute_firewall" "external_allow_ssh" {
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["ssh"]
+  target_tags = ["ssh", "http"]
 }
 
-resource "google_compute_firewall" "mgmt_allow_ssh" {
-  name    = "mgmt-allow-ssh"
+resource "google_compute_firewall" "mgmt_allowed" {
+  name    = "mgmt-allowed"
   network = google_compute_network.mgmt_vpc.name
 
   allow {
     protocol = "tcp"
-    ports    = ["22"]
+    ports    = ["22", "443"]
   }
 
   source_ranges = ["0.0.0.0/0"]
-  target_tags = ["ssh"]
+  target_tags = ["ssh", "http"]
 }
