@@ -1,39 +1,3 @@
-resource "google_compute_network" "mgmt_vpc" {
-  name                    = "mgmt-vpc"
-  auto_create_subnetworks = "false"
-  routing_mode = "REGIONAL"
-}
-resource "google_compute_subnetwork" "mgmt_subnet" {
-  name          = "mgmt-subnet"
-  ip_cidr_range = var.mgmt_cidr
-  region        = var.region
-  network       = google_compute_network.mgmt_vpc.self_link
-
-}
-resource "google_compute_network" "internal_vpc" {
-  name                    = "internal-vpc"
-  auto_create_subnetworks = "false"
-  routing_mode = "REGIONAL"
-}
-resource "google_compute_subnetwork" "internal_subnet" {
-  name          = "internal-subnet"
-  ip_cidr_range = var.internal_cidr
-  region        = var.region
-  network       = google_compute_network.internal_vpc.self_link
-
-}
-resource "google_compute_network" "external_vpc" {
-  name                    = "external-vpc"
-  auto_create_subnetworks = "false"
-  routing_mode = "REGIONAL"
-}
-resource "google_compute_subnetwork" "external_subnet" {
-  name          = "external-subnet"
-  ip_cidr_range = var.external_cidr
-  region        = var.region
-  network       = google_compute_network.external_vpc.self_link
-
-}
 resource "google_compute_firewall" "default_allow_internal_mgmt" {
   name    = "default-allow-internal-mgmt"
   network = google_compute_network.mgmt_vpc.name
@@ -93,4 +57,43 @@ resource "google_compute_firewall" "default_allow_internal_internal" {
   priority = "65534"
 
   source_ranges = [var.internal_cidr]
+}
+
+resource "google_compute_firewall" "internal_allow_ssh" {
+  name    = "internal-allow-ssh"
+  network = google_compute_network.internal_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["ssh"]
+}
+
+resource "google_compute_firewall" "external_allow_ssh" {
+  name    = "external-allow-ssh"
+  network = google_compute_network.external_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["ssh"]
+}
+
+resource "google_compute_firewall" "mgmt_allow_ssh" {
+  name    = "mgmt-allow-ssh"
+  network = google_compute_network.mgmt_vpc.name
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+
+  source_ranges = ["0.0.0.0/0"]
+  target_tags = ["ssh"]
 }
